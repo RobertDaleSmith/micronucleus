@@ -44,8 +44,8 @@
 /********************************************************************************
 * USB details
 ********************************************************************************/
-#define MICRONUCLEUS_VENDOR_ID   0x16D0
-#define MICRONUCLEUS_PRODUCT_ID  0x0753
+#define MICRONUCLEUS_VENDOR_ID   0x20A0
+#define MICRONUCLEUS_PRODUCT_ID  0x42df
 #define MICRONUCLEUS_USB_TIMEOUT 0x2800 // 10 seconds - timeout is in milliseconds. 65 seconds makes no sense for an individual USB transfer.
 #define MICRONUCLEUS_MAX_MAJOR_VERSION 2
 

@@ -71,12 +71,14 @@
 
 /* -------------------------- Device Description --------------------------- */
 
-#define USB_CFG_VENDOR_ID 0xD0, 0x16 /* = 0x16d0 */
+// #define USB_CFG_VENDOR_ID 0xD0, 0x16 /* = 0x16d0 */
+#define USB_CFG_VENDOR_ID 0xA0, 0x20 /* = 0x20A0 */
 /* USB vendor ID for the device, low byte first. If you have registered your
  * own Vendor ID, define it here. Otherwise you may use one of obdev's free
  * shared VID/PID pairs. Be sure to read USB-IDs-for-free.txt for rules!
  */
-#define  USB_CFG_DEVICE_ID 0x53, 0x07 /* = 0x0753 = Digistump */
+// #define  USB_CFG_DEVICE_ID 0x53, 0x07 /* = 0x0753 = Digistump */
+#define  USB_CFG_DEVICE_ID 0xdf, 0x42 /* = 0x42df = SNES23DO */
 /* This is the ID of the product, low byte first. It is interpreted in the
  * scope of the vendor ID. If you have registered your own VID with usb.org
  * or if you have licensed a PID from somebody else, define it here. Otherwise
@@ -91,6 +93,8 @@
 //#define USB_CFG_VENDOR_NAME_LEN 1
 //#define USB_CFG_VENDOR_NAME 'd','i','g','i','s','t','u','m','p','.','c','o','m'
 //#define USB_CFG_VENDOR_NAME_LEN 13
+#define USB_CFG_VENDOR_NAME 'C','o','n','t','r','o','l','l','e','r','A','d','a','p','t','e','r','.','c','o','m'
+#define USB_CFG_VENDOR_NAME_LEN 21
 /* These two values define the vendor name returned by the USB device. The name
  * must be given as a list of characters under single quotes. The characters
  * are interpreted as Unicode (UTF-16) entities.
@@ -101,12 +105,14 @@
  */
 //#define USB_CFG_DEVICE_NAME 0x00B5,'B'
 //#define USB_CFG_DEVICE_NAME_LEN 2
+#define USB_CFG_DEVICE_NAME 'S','N','E','S','2','3','D','O',' ','C','o','n','t','r','o','l','l','e','r',' ','A','d','a','p','t','e','r',' ','(','B','o','o','t','l','o','a','d','e','r',')'
+#define USB_CFG_DEVICE_NAME_LEN 40
 /* Same as above for the device name. If you don't want a device name, undefine
  * the macros. See the file USB-IDs-for-free.txt before you assign a name if
  * you use a shared VID/PID.
  */
-/*#define USB_CFG_SERIAL_NUMBER   'N', 'o', 'n', 'e' */
-/*#define USB_CFG_SERIAL_NUMBER_LEN   0 */
+#define USB_CFG_SERIAL_NUMBER   '0','0','0','0','0','0','0','0','0','0','0','0','0','0','1'
+#define USB_CFG_SERIAL_NUMBER_LEN   15
 /* Same as above for the serial number. If you don't want a serial number,
  * undefine the macros.
  * It may be useful to provide the serial number through other means than at
@@ -172,7 +178,7 @@
 
 #define USB_CFG_DESCR_PROPS_DEVICE                  0
 #define USB_CFG_DESCR_PROPS_CONFIGURATION           0
-#define USB_CFG_DESCR_PROPS_STRINGS                 1
+#define USB_CFG_DESCR_PROPS_STRINGS                 0
 #define USB_CFG_DESCR_PROPS_STRING_0                0
 #define USB_CFG_DESCR_PROPS_STRING_VENDOR           0
 #define USB_CFG_DESCR_PROPS_STRING_PRODUCT          0

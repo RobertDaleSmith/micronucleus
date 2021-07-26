@@ -28,7 +28,7 @@ CFLAGS =
 CONFIGPATH = configuration/$(CONFIG)
 include $(CONFIGPATH)/Makefile.inc
 
-PROGRAMMER ?= -c USBasp
+PROGRAMMER ?= -c atmelice_isp
 # PROGRAMMER contains AVRDUDE options to address your programmer
 
 # Tools:

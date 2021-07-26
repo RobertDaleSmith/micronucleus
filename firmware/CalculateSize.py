@@ -24,6 +24,8 @@ if (codesize == 0):
     print("Codesize could not be found!")
     exit()
 
+print('4K  Device -- ',end='')
+printmnsize(codesize,pagesize=64,memsize=4096)
 print('8K  Device -- ',end='')
 printmnsize(codesize,pagesize=64,memsize=8192)
 print('16K Device -- ',end='')
