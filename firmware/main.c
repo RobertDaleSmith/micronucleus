@@ -93,14 +93,18 @@
 //    Bit 7 '1': Page erase time equals page write time divided by 4
 //   Byte 4:  SIGNATURE_1
 //   Byte 5:  SIGNATURE_2
+//   Byte 6:  User program major version
+//   Byte 7:  User program minor version
 
-PROGMEM const uint8_t configurationReply[6] = {
+uint8_t configurationReply[8] = {
   (((uint16_t)PROGMEM_SIZE) >> 8) & 0xff,
   ((uint16_t)PROGMEM_SIZE) & 0xff,
   SPM_PAGESIZE,
   MICRONUCLEUS_WRITE_SLEEP,
   SIGNATURE_1,
-  SIGNATURE_2
+  SIGNATURE_2,
+  0, // app major ver
+  0  // app minor ver
 };
 
 typedef union {
@@ -245,8 +249,11 @@ static void writeWordToPageBuffer(uint16_t data) {
  *
  */
 static uint8_t usbFunctionSetup(uint8_t data[8]) {
+    configurationReply[6] = pgm_read_byte(0x02);
+    configurationReply[7] = pgm_read_byte(0x03);
+    if (configurationReply[6] == 0xFF) configurationReply[6] = 0;
+    if (configurationReply[7] == 0xFF) configurationReply[7] = 0;
     usbRequest_t *rq = (void*) data;
-
     idlePolls.b[1] = 0; // reset high byte of idle counter when we get usb class or vendor requests to start a new timeout
     if (rq->bRequest == cmd_device_info) { // get device info
         usbMsgPtr = (usbMsgPtr_t) configurationReply;

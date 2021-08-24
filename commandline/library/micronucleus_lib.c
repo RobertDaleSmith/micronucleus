@@ -80,9 +80,9 @@ micronucleus* micronucleus_connect(int fast_mode) {
 
         if (nucleus->version.major>=2) {  // Version 2.x
           // get 6 byte nucleus info
-          unsigned char buffer[6];
+          unsigned char buffer[8];
           errno = 0;
-          int res = usb_control_msg(nucleus->device, USB_ENDPOINT_IN| USB_TYPE_VENDOR | USB_RECIP_DEVICE, 0, 0, 0, (char *)buffer, 6, MICRONUCLEUS_USB_TIMEOUT);
+          int res = usb_control_msg(nucleus->device, USB_ENDPOINT_IN| USB_TYPE_VENDOR | USB_RECIP_DEVICE, 0, 0, 0, (char *)buffer, 8, MICRONUCLEUS_USB_TIMEOUT);
 
           // Device descriptor was found, but talking to it was not successful. This can happen when the device is being reset.
           if (res<0) return NULL;
@@ -90,12 +90,12 @@ micronucleus* micronucleus_connect(int fast_mode) {
           // Only seen on windows.
           // This happens if the USB device is not listening, but did not disconnect from the USB bus,
           // which is a desirable behavior, since otherwise you get that nasty error in device manager.
-          if (res<6) {
+          if (res<8) {
           	fprintf(stderr, "%s. Micronucleus device seems to be inactive. Please unplug and replug or reset the device.\n", strerror(errno));
           	return NULL;
           }
 
-          assert(res >= 6);
+          assert(res >= 8);
 
           nucleus->flash_size = (buffer[0]<<8) + buffer[1];
           nucleus->page_size = buffer[2];
@@ -121,6 +121,8 @@ micronucleus* micronucleus_connect(int fast_mode) {
 
           nucleus->signature1 = buffer[4];
           nucleus->signature2 = buffer[5];
+          nucleus->appversion.major = buffer[6] & 0xFF;
+          nucleus->appversion.minor = buffer[7] & 0xFF;
 
         } else {  // Version 1.x
           // get 4 byte nucleus info

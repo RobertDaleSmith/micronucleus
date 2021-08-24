@@ -182,6 +182,14 @@ extern usbMsgPtr_t usbMsgPtr;
  * driver for standard control requests.
  */
 
+extern uchar usbMsgFlags;    /* flag values see USB_FLG_* */
+/* Can be set to `USB_FLG_MSGPTR_IS_ROM` in `usbFunctionSetup()` or
+ * `usbFunctionDescriptor()` if `usbMsgPtr` has been set to a flash memory
+ * address.
+ */
+
+#define USB_FLG_MSGPTR_IS_ROM   (1<<6)
+
 USB_PUBLIC usbMsgLen_t usbFunctionSetup(uchar data[8]);
 /* This function is called when the driver receives a SETUP transaction from
  * the host which is not answered by the driver itself (in practice: class and
@@ -208,6 +216,12 @@ USB_PUBLIC usbMsgLen_t usbFunctionSetup(uchar data[8]);
  *
  * Note that calls to the functions usbFunctionRead() and usbFunctionWrite()
  * are only done if enabled by the configuration in usbconfig.h.
+ */
+USB_PUBLIC usbMsgLen_t usbFunctionDescriptor(struct usbRequest *rq);
+/* You need to implement this function ONLY if you provide USB descriptors at
+ * runtime (which is an expert feature). It is very similar to
+ * usbFunctionSetup() above, but it is called only to request USB descriptor
+ * data. See the documentation of usbFunctionSetup() above for more info.
  */
 
 extern uchar usbRxToken;    /* may be used in usbFunctionWriteOut() below */
@@ -265,6 +279,17 @@ extern uchar    usbConfiguration;
 /* ------------------------------------------------------------------------- */
 /* ----------------- Definitions for Descriptor Properties ----------------- */
 /* ------------------------------------------------------------------------- */
+#define USB_PROP_IS_DYNAMIC     (1u << 14)
+/* If this property is set for a descriptor, usbFunctionDescriptor() will be
+ * used to obtain the particular descriptor. Data directly returned via
+ * usbMsgPtr are FLASH data by default, combine (OR) with USB_PROP_IS_RAM to
+ * return RAM data.
+ */
+#define USB_PROP_IS_RAM         (1u << 15)
+/* If this property is set for a descriptor, the data is read from RAM
+ * memory instead of Flash. The property is used for all methods to provide
+ * external descriptors.
+ */
 #define USB_PROP_LENGTH(len)    ((len) & 0x3fff)
 /* If a static external descriptor is used, this is the total length of the
  * descriptor in bytes.

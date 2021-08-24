@@ -61,6 +61,11 @@ typedef struct _micronucleus_version {
   unsigned char minor;
 } micronucleus_version;
 
+typedef struct _app_version {
+  unsigned char major;
+  unsigned char minor;
+} app_version;
+
 #define MICRONUCLEUS_COMMANDLINE_VERSION ("micronucleus-cli version: 2.5 from " __DATE__)
 
 // handle representing one micronucleus device
@@ -76,6 +81,7 @@ typedef struct _micronucleus {
   unsigned int erase_sleep; // milliseconds
   unsigned char signature1; // only used in protocol v2
   unsigned char signature2; // only used in protocol v2
+  app_version appversion;
 } micronucleus;
 
 typedef void (*micronucleus_callback)(float progress);

@@ -46,6 +46,7 @@ uchar       usbTxBuf[USB_BUFSIZE];/* data to transmit with next IN, free if usbT
 /* USB status registers / not shared with asm code */
 usbMsgPtr_t         usbMsgPtr;      /* data to transmit next -- ROM or RAM address */
 static usbMsgLen_t  usbMsgLen; /* remaining number of bytes */
+uchar               usbMsgFlags;    /* flag values see USB_FLG_* */
 
 #define USB_FLG_USE_USER_RW     (1<<7)
 
@@ -203,12 +204,19 @@ PROGMEM const char usbDescriptorConfiguration[] = {    /* USB configuration desc
 static inline usbMsgLen_t usbDriverDescriptor(usbRequest_t *rq)
 {
 usbMsgLen_t len = 0;
+uchar       flags = USB_FLG_MSGPTR_IS_ROM;
+
     SWITCH_START(rq->wValue.bytes[1])
     SWITCH_CASE(USBDESCR_DEVICE)    /* 1 */
         GET_DESCRIPTOR(USB_CFG_DESCR_PROPS_DEVICE, usbDescriptorDevice)
     SWITCH_CASE(USBDESCR_CONFIG)    /* 2 */
         GET_DESCRIPTOR(USB_CFG_DESCR_PROPS_CONFIGURATION, usbDescriptorConfiguration)
     SWITCH_CASE(USBDESCR_STRING)    /* 3 */
+#if USB_CFG_DESCR_PROPS_STRINGS & USB_PROP_IS_DYNAMIC
+        if(USB_CFG_DESCR_PROPS_STRINGS & USB_PROP_IS_RAM)
+            flags = 0;
+        len = usbFunctionDescriptor(rq);
+#else   /* USB_CFG_DESCR_PROPS_STRINGS & USB_PROP_IS_DYNAMIC */
         SWITCH_START(rq->wValue.bytes[0])
         SWITCH_CASE(0)
             GET_DESCRIPTOR(USB_CFG_DESCR_PROPS_STRING_0, usbDescriptorString0)
@@ -219,11 +227,23 @@ usbMsgLen_t len = 0;
         SWITCH_CASE(3)
             GET_DESCRIPTOR(USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER, usbDescriptorStringSerialNumber)
         SWITCH_DEFAULT
+            if(USB_CFG_DESCR_PROPS_UNKNOWN & USB_PROP_IS_DYNAMIC){
+                if(USB_CFG_DESCR_PROPS_UNKNOWN & USB_PROP_IS_RAM){
+                    flags = 0;
+                }
+                len = usbFunctionDescriptor(rq);
+            }
         SWITCH_END
+#endif  /* USB_CFG_DESCR_PROPS_STRINGS & USB_PROP_IS_DYNAMIC */
     SWITCH_DEFAULT
+        if(USB_CFG_DESCR_PROPS_UNKNOWN & USB_PROP_IS_DYNAMIC){
+            if(USB_CFG_DESCR_PROPS_UNKNOWN & USB_PROP_IS_RAM){
+                flags = 0;
+            }
+            len = usbFunctionDescriptor(rq);
+        }
     SWITCH_END
-
-//    flags=flags;  // Make compiler shut up about unused variable -> leads to another warning :-(
+    usbMsgFlags = flags;
     return len;
 }
 
@@ -286,12 +306,26 @@ usbRequest_t    *rq = (void *)data; // data is constant value usbRxBuf + 1 and o
         usbMsgLen_t replyLen;
         usbTxBuf[0] = USBPID_DATA0;         /* initialize data toggling */
         usbTxLen = USBPID_NAK;              /* abort pending transmit */
+        usbMsgFlags = 0;
         uchar type = rq->bmRequestType & USBRQ_TYPE_MASK; // masking is essential here
         if(type != USBRQ_TYPE_STANDARD){    /* standard requests are handled by driver */
             replyLen = usbFunctionSetup(data); // for USBRQ_TYPE_CLASS or USBRQ_TYPE_VENDOR
         }else{
             replyLen = usbDriverSetup(rq);
         }
+#if USB_CFG_IMPLEMENT_FN_READ || USB_CFG_IMPLEMENT_FN_WRITE
+        if(replyLen == USB_NO_MSG){         /* use user-supplied read/write function */
+            /* do some conditioning on replyLen, but on IN transfers only */
+            if((rq->bmRequestType & USBRQ_DIR_MASK) != USBRQ_DIR_HOST_TO_DEVICE){
+                if(sizeof(replyLen) < sizeof(rq->wLength.word)){ /* help compiler with optimizing */
+                    replyLen = rq->wLength.bytes[0];
+                }else{
+                    replyLen = rq->wLength.word;
+                }
+            }
+            usbMsgFlags = USB_FLG_USE_USER_RW;
+        }else   /* The 'else' prevents that we limit a replyLen of USB_NO_MSG to the maximum transfer len. */
+#endif
         if(sizeof(replyLen) < sizeof(rq->wLength.word)){ /* help compiler with optimizing */
             if(!rq->wLength.bytes[1] && replyLen > rq->wLength.bytes[0])    /* limit length to max */
                 replyLen = rq->wLength.bytes[0];
@@ -300,6 +334,17 @@ usbRequest_t    *rq = (void *)data; // data is constant value usbRxBuf + 1 and o
                 replyLen = rq->wLength.word;
         }
         usbMsgLen = replyLen;
+    }else{  /* usbRxToken must be USBPID_OUT, which means data phase of setup (control-out) */
+#if USB_CFG_IMPLEMENT_FN_WRITE
+        if(usbMsgFlags & USB_FLG_USE_USER_RW){
+            uchar rval = usbFunctionWrite(data, len);
+            if(rval == 0xff){   /* an error occurred */
+                usbTxLen = USBPID_STALL;
+            }else if(rval != 0){    /* This was the final package */
+                usbMsgLen = 0;  /* answer with a zero-sized data packet */
+            }
+        }
+#endif
     }
 }
 
@@ -308,17 +353,31 @@ usbRequest_t    *rq = (void *)data; // data is constant value usbRxBuf + 1 and o
 /* This function is similar to usbFunctionRead(), but it's also called for
  * data handled automatically by the driver (e.g. descriptor reads).
  */
-static uchar usbDeviceRead(uchar *data, usbMsgLen_t len)
+static uchar usbDeviceRead(uchar *data, uchar len)
 {
     if(len > 0){    /* don't bother app with 0 sized reads */
-        uchar i = len;
-        usbMsgPtr_t r = usbMsgPtr;
-            do{
-                uchar c = USB_READ_FLASH(r);    /* assign to char size variable to enforce byte ops */
-                *data++ = c;
-                r++;
-            }while(--i);
-        usbMsgPtr = r;
+#if USB_CFG_IMPLEMENT_FN_READ
+        if(usbMsgFlags & USB_FLG_USE_USER_RW){
+            len = usbFunctionRead(data, len);
+        }else
+#endif
+        {
+            uchar i = len;
+            usbMsgPtr_t r = usbMsgPtr;
+            if(usbMsgFlags & USB_FLG_MSGPTR_IS_ROM){    /* ROM data */
+                do{
+                    uchar c = USB_READ_FLASH(r);    /* assign to char size variable to enforce byte ops */
+                    *data++ = c;
+                    r++;
+                }while(--i);
+            }else{  /* RAM data */
+                do{
+                    *data++ = *((uchar *)r);
+                    r++;
+                }while(--i);
+            }
+            usbMsgPtr = r;
+        }
     }
     return len;
 }

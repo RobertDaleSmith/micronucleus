@@ -200,7 +200,8 @@ int main(int argc, char **argv) {
   }
   printProgress(1.0);
 
-  printf("> Device has firmware version %d.%d\n",my_device->version.major,my_device->version.minor);
+  printf("> Device has bootloader firmware version %d.%d\n",my_device->version.major,my_device->version.minor);
+  printf("> Device has application firmware version %d.%d\n",my_device->appversion.major,my_device->appversion.minor);
   if (my_device->signature1) printf("> Device signature: 0x1e%02x%02x \n",(int)my_device->signature1,(int)my_device->signature2);
   printf("> Available space for user applications: %d bytes\n", my_device->flash_size);
   printf("> Suggested sleep time between sending pages: %ums\n", my_device->write_sleep);

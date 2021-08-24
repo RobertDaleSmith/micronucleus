@@ -105,14 +105,14 @@
  */
 //#define USB_CFG_DEVICE_NAME 0x00B5,'B'
 //#define USB_CFG_DEVICE_NAME_LEN 2
-#define USB_CFG_DEVICE_NAME 'S','N','E','S','2','3','D','O',' ','C','o','n','t','r','o','l','l','e','r',' ','A','d','a','p','t','e','r',' ','(','B','o','o','t','l','o','a','d','e','r',')'
-#define USB_CFG_DEVICE_NAME_LEN 40
+#define USB_CFG_DEVICE_NAME 'S','N','E','S','2','3','D','O',' ','(','B','o','o','t','l','o','a','d','e','r',')'
+#define USB_CFG_DEVICE_NAME_LEN 21
 /* Same as above for the device name. If you don't want a device name, undefine
  * the macros. See the file USB-IDs-for-free.txt before you assign a name if
  * you use a shared VID/PID.
  */
-#define USB_CFG_SERIAL_NUMBER   '0','0','0','0','0','0','0','0','0','0','0','0','0','0','1'
-#define USB_CFG_SERIAL_NUMBER_LEN   15
+#define USB_CFG_SERIAL_NUMBER '1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6'
+#define USB_CFG_SERIAL_NUMBER_LEN   16
 /* Same as above for the serial number. If you don't want a serial number,
  * undefine the macros.
  * It may be useful to provide the serial number through other means than at
