@@ -204,13 +204,25 @@ int main(int argc, char **argv) {
   }
   printProgress(1.0);
 
-  printf("> Device has bootloader firmware version %d.%d\n",my_device->version.major,my_device->version.minor);
-  printf("> Device has application firmware version %d.%d\n",my_device->appversion.major,my_device->appversion.minor);
-  if (my_device->signature1) printf("> Device signature: 0x1e%02x%02x \n",(int)my_device->signature1,(int)my_device->signature2);
-  printf("> Available space for user applications: %d bytes\n", my_device->flash_size);
-  printf("> Suggested sleep time between sending pages: %ums\n", my_device->write_sleep);
-  printf("> Whole page count: %d  page size: %d\n", my_device->pages,my_device->page_size);
-  printf("> Erase function sleep duration: %dms\n", my_device->erase_sleep);
+  if (!dump_progress)  {
+    printf("> Device has bootloader firmware version %d.%d\n",my_device->version.major,my_device->version.minor);
+    printf("> Device has application firmware version %d.%d\n",my_device->app_version.major,my_device->app_version.minor);
+    if (my_device->signature1) printf("> Device signature: 0x1e%02x%02x \n",(int)my_device->signature1,(int)my_device->signature2);
+    printf("> Available space for user applications: %d bytes\n", my_device->flash_size);
+    printf("> Suggested sleep time between sending pages: %ums\n", my_device->write_sleep);
+    printf("> Whole page count: %d  page size: %d\n", my_device->pages,my_device->page_size);
+    printf("> Erase function sleep duration: %dms\n", my_device->erase_sleep);
+  } else {
+    setProgressData("info", 2);
+    printf("{status:\"%s\",key:\"version\",value:%d.%d}\n", progress_friendly_name, my_device->version.major,my_device->version.minor);
+    printf("{status:\"%s\",key:\"app_version\",value:%d.%d}\n", progress_friendly_name, my_device->app_version.major,my_device->app_version.minor);
+    if (my_device->signature1) printf("{status:\"%s\",key:\"signature\",value:\"0x1e%02x%02x\"}\n",progress_friendly_name, (int)my_device->signature1,(int)my_device->signature2);
+    printf("{status:\"%s\",key:\"flash_size\",value:%d}\n", progress_friendly_name, my_device->flash_size);
+    printf("{status:\"%s\",key:\"write_sleep\",value:%d}\n", progress_friendly_name, my_device->write_sleep);
+    printf("{status:\"%s\",key:\"page_count\",value:%d}\n", progress_friendly_name, my_device->pages);
+    printf("{status:\"%s\",key:\"page_size\",value:%d}\n", progress_friendly_name, my_device->page_size);
+    printf("{status:\"%s\",key:\"erase_sleep\",value:%d}\n", progress_friendly_name, my_device->erase_sleep);
+  }
   fflush(stdout);
 
   int startAddress = 1, endAddress = 0;
@@ -312,7 +324,7 @@ int main(int argc, char **argv) {
     printProgress(1.0);
   }
 
-  printf(">> Micronucleus done. Thank you!\n");
+  printf(">> Firmware update done. Thank you!\n");
 
   return EXIT_SUCCESS;
 }

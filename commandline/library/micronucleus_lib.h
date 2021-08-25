@@ -81,7 +81,7 @@ typedef struct _micronucleus {
   unsigned int erase_sleep; // milliseconds
   unsigned char signature1; // only used in protocol v2
   unsigned char signature2; // only used in protocol v2
-  app_version appversion;
+  app_version app_version;
 } micronucleus;
 
 typedef void (*micronucleus_callback)(float progress);

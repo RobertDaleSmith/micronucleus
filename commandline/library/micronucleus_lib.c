@@ -121,8 +121,8 @@ micronucleus* micronucleus_connect(int fast_mode) {
 
           nucleus->signature1 = buffer[4];
           nucleus->signature2 = buffer[5];
-          nucleus->appversion.major = buffer[6] & 0xFF;
-          nucleus->appversion.minor = buffer[7] & 0xFF;
+          nucleus->app_version.major = buffer[6];
+          nucleus->app_version.minor = buffer[7];
 
         } else {  // Version 1.x
           // get 4 byte nucleus info
