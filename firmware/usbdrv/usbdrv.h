@@ -217,12 +217,6 @@ USB_PUBLIC usbMsgLen_t usbFunctionSetup(uchar data[8]);
  * Note that calls to the functions usbFunctionRead() and usbFunctionWrite()
  * are only done if enabled by the configuration in usbconfig.h.
  */
-USB_PUBLIC usbMsgLen_t usbFunctionDescriptor(struct usbRequest *rq);
-/* You need to implement this function ONLY if you provide USB descriptors at
- * runtime (which is an expert feature). It is very similar to
- * usbFunctionSetup() above, but it is called only to request USB descriptor
- * data. See the documentation of usbFunctionSetup() above for more info.
- */
 
 extern uchar usbRxToken;    /* may be used in usbFunctionWriteOut() below */
 #ifdef USB_CFG_PULLUP_IOPORTNAME
@@ -279,17 +273,6 @@ extern uchar    usbConfiguration;
 /* ------------------------------------------------------------------------- */
 /* ----------------- Definitions for Descriptor Properties ----------------- */
 /* ------------------------------------------------------------------------- */
-#define USB_PROP_IS_DYNAMIC     (1u << 14)
-/* If this property is set for a descriptor, usbFunctionDescriptor() will be
- * used to obtain the particular descriptor. Data directly returned via
- * usbMsgPtr are FLASH data by default, combine (OR) with USB_PROP_IS_RAM to
- * return RAM data.
- */
-#define USB_PROP_IS_RAM         (1u << 15)
-/* If this property is set for a descriptor, the data is read from RAM
- * memory instead of Flash. The property is used for all methods to provide
- * external descriptors.
- */
 #define USB_PROP_LENGTH(len)    ((len) & 0x3fff)
 /* If a static external descriptor is used, this is the total length of the
  * descriptor in bytes.
@@ -327,37 +310,37 @@ extern uchar    usbConfiguration;
  */
 #ifndef __ASSEMBLER__
 extern
-#if !(USB_CFG_DESCR_PROPS_DEVICE & USB_PROP_IS_RAM)
+#if !(USB_CFG_DESCR_PROPS_DEVICE)
 PROGMEM const
 #endif
 char usbDescriptorDevice[];
 
 extern
-#if !(USB_CFG_DESCR_PROPS_CONFIGURATION & USB_PROP_IS_RAM)
+#if !(USB_CFG_DESCR_PROPS_CONFIGURATION)
 PROGMEM const
 #endif
 char usbDescriptorConfiguration[];
 
 extern
-#if !(USB_CFG_DESCR_PROPS_STRING_0 & USB_PROP_IS_RAM)
+#if !(USB_CFG_DESCR_PROPS_STRING_0)
 PROGMEM const
 #endif
 char usbDescriptorString0[];
 
 extern
-#if !(USB_CFG_DESCR_PROPS_STRING_VENDOR & USB_PROP_IS_RAM)
+#if !(USB_CFG_DESCR_PROPS_STRING_VENDOR)
 PROGMEM const
 #endif
 int usbDescriptorStringVendor[];
 
 extern
-#if !(USB_CFG_DESCR_PROPS_STRING_PRODUCT & USB_PROP_IS_RAM)
+#if !(USB_CFG_DESCR_PROPS_STRING_PRODUCT)
 PROGMEM const
 #endif
 int usbDescriptorStringDevice[];
 
 extern
-#if !(USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER & USB_PROP_IS_RAM)
+#if !(USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER)
 PROGMEM const
 #endif
 int usbDescriptorStringSerialNumber[];
