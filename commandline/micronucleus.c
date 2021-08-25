@@ -59,6 +59,7 @@ static int dump_progress = 0; // output computer friendly progress info
 static int use_ansi = 0; // output ansi control character stuff
 static int erase_only = 0; // only erase, dont't write file
 static int fast_mode = 0; // normal mode adds 2ms to page writing times and waits longer for connect.
+static int info_only = 0;
 static int timeout = 0;
 /*****************************************************************************/
 
@@ -84,6 +85,7 @@ int main(int argc, char **argv) {
   dump_progress = 0;
   erase_only = 0;
   fast_mode=0;
+  info_only=0;
   timeout = 0; // no timeout by default
   #if defined(WIN)
     use_ansi = 0;
@@ -133,6 +135,8 @@ int main(int argc, char **argv) {
       use_ansi = 0;
     } else if (strcmp(argv[arg_pointer], "--fast-mode") == 0) {
       fast_mode = 1;
+    } else if (strcmp(argv[arg_pointer], "--info-only") == 0) {
+      info_only = 1;
     } else if (strcmp(argv[arg_pointer], "--erase-only") == 0) {
       erase_only = 1;
       progress_total_steps -= 1;
@@ -152,7 +156,7 @@ int main(int argc, char **argv) {
     arg_pointer += 1;
   }
 
-  if (file == NULL && erase_only == 0) {
+  if (file == NULL && erase_only == 0 && info_only == 0) {
     // print version if we are called without any parameter
     printf(MICRONUCLEUS_COMMANDLINE_VERSION);
     printf("\nNeither filename nor --erase-only given!\n\n");
@@ -210,6 +214,10 @@ int main(int argc, char **argv) {
   fflush(stdout);
 
   int startAddress = 1, endAddress = 0;
+
+  if (info_only) {
+    return EXIT_SUCCESS;
+  }
 
   if (!erase_only) {
     setProgressData("parsing", 3);
