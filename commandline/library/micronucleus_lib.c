@@ -32,6 +32,7 @@
 #include "micronucleus_lib.h"
 #include "littleWire_util.h"
 
+#include "libusb.h"
 #include <string.h>
 #include <errno.h>
 
@@ -90,12 +91,12 @@ micronucleus* micronucleus_connect(int fast_mode) {
           // Only seen on windows.
           // This happens if the USB device is not listening, but did not disconnect from the USB bus,
           // which is a desirable behavior, since otherwise you get that nasty error in device manager.
-          if (res<8) {
+          if (res<6) {
           	fprintf(stderr, "%s. Micronucleus device seems to be inactive. Please unplug and replug or reset the device.\n", strerror(errno));
           	return NULL;
           }
 
-          assert(res >= 8);
+          assert(res >= 6);
 
           nucleus->flash_size = (buffer[0]<<8) + buffer[1];
           nucleus->page_size = buffer[2];

@@ -10,6 +10,6 @@ Please proceed as follows to install the Micronucleus driver:
 
 The driver is now installed and Micronucleus should be ready to use. 
 
-![](zadig_screenshot.gif)
+![](zadig_screenshot.png)
 
 
